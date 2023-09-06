@@ -1,15 +1,15 @@
-import { SecretType } from "../secret.ts"
-import { SlashCommand } from "../types/command.ts"
-import { Configuration, OpenAIApi } from "../deps.ts"
+import { SecretType } from "../secret.ts";
+import { SlashCommand } from "../types/command.ts";
+import { Configuration, OpenAIApi } from "../deps.ts";
 
-import hometeCommand from "./homete.ts"
+import hometeCommand from "./homete.ts";
 
 export const createCommands = (secret: SecretType): SlashCommand[] => {
-    const config = new Configuration({
-        apiKey: secret.OPENAI_TOKEN,
-    })
+  const config = new Configuration({
+    apiKey: secret.OPENAI_TOKEN,
+  });
 
-    const client = new OpenAIApi(config)
+  const client = new OpenAIApi(config);
 
-    return [hometeCommand({ client })]
-}
+  return [hometeCommand({ client })];
+};

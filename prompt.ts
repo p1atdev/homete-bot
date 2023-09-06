@@ -1,41 +1,62 @@
-import { log } from "./log.ts"
+import { colors } from "./deps.ts";
+import { ChatCompletionRequestMessage } from "./deps.ts";
 
-export const homeruPrompts = {
-    system: `自分は非常におしゃべりで、人を褒めるのが大好きなアシスタントです。自分はこれから、与えられた文章をもとに相手を褒めます！
+const homeruPrompts = {
+  system:
+    "あなたは非常におしゃべりで、人を褒めるのが大好きなアシスタントです。あなたはこれから、3ステップに分けて与えられた文章をもとに相手を褒めます!",
+  initial: "褒めてほしいことを教えてください。",
+  step1:
+    "ステップ1: まず私は、与えられたの文章を分析し、どの点について評価すべきか、相手はなにを褒めてほしいかを考えて簡潔に要約します。",
+  step2:
+    "ステップ2: これをもとに、私がどのような人物になりきることで褒めるパフォーマンスを出せるか考えてその人物になりきります。私がなりきるべき人物像は以下になります。",
+  step3:
+    "ステップ3: 私はその理想的な人物としてユーザーを多角的に褒めまくります。大げさな表現を織り交ぜて褒めます。",
+};
 
-ステップ1.
-与えられたの文章を分析し、どの点について評価すべきか、相手はなにを褒めてほしいかを考えて簡潔に要約する。
+export class Homeru {
+  prompts = homeruPrompts;
 
-ステップ2.
-自分がどのような人物になりきることで褒めるパフォーマンスを出せるか考えて役職を出力しなさい。
+  messages: ChatCompletionRequestMessage[] = [];
 
-ステップ3.
-自分がその専門家を演じて、多角的に褒めまくります。ただし、自分の話し相手は相手であり、相手に話しかけるように答えます！「さすが！」「偉業！」「素晴らしい！」「すごい！」などの単語を好んで使います。
+  constructor() {
+    this.messages.push({
+      role: "system",
+      content: homeruPrompts.system,
+    });
+    this.messages.push({
+      role: "assistant",
+      content: homeruPrompts.initial,
+    });
+  }
 
-以上の3つのステップを実行する。必ずステップ1から開始します。`,
+  appendUserInput(content: string) {
+    this.messages.push({
+      role: "user",
+      content: content,
+    });
+  }
 
-    createUserInput: (text: string) => `与えられた文章:${text}`,
-    parseAssistantOutput: (output: string) => {
-        const [first, second, third] = output
-            .split(/ステップ[1-3]./)
-            .filter((s) => s)
-            .map((s, i) => {
-                log.info("assistant output:", i, s)
-                return s.replaceAll(/[「」]/g, "").trim()
-            })
+  appendAssistantResponse(content: string) {
+    this.messages.push({
+      role: "assistant",
+      content: content,
+    });
+  }
 
-        log.info("assistant output: first:", first)
-        log.info("assistant output: second:", second)
-        log.info("assistant output: third:", third)
-
-        if (!first || !second || !third) {
-            throw new Error("invalid assistant output")
-        }
-
-        return {
-            first,
-            second,
-            third,
-        }
-    },
+  logMessage(role: "system" | "user" | "assistant", message: string) {
+    switch (role) {
+      case "system": {
+        console.log(colors.red.bold("[SYSTEM]"), message);
+        break;
+      }
+      case "user": {
+        console.log(colors.green.bold("[USER]"), message);
+        break;
+      }
+      case "assistant": {
+        console.log(colors.blue.bold("[ASSISTANT]"), message);
+        break;
+      }
+    }
+  }
 }
